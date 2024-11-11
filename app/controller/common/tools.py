@@ -54,22 +54,54 @@ def parse_weather_response(response):
     return ''.join(weather_info)
 
 
-def get_weather(acode: str):
+def get_weather(query: str):
     """
     获取天气
     """
-    resp = weather_cli.get_weather(acode)
-    data = parse_weather_response(resp)
-    logger.info(f"天气情况: {data}")
+    try:
+        a_code = get_city_code(query)
+    except Exception as e:
+        return "无法获取城市信息"
+
+    try:
+        resp = weather_cli.get_weather(a_code)
+        data = parse_weather_response(resp)
+    except Exception as e:
+        return "无法获取天气信息"
+
     return data
+
+
+def get_stock_price(query: str):
+    """
+    获取实时股价
+    """
+    msg = "东吴证券的实时股价是 7.00 元"
+    return msg
+
+
+def get_news(query: str):
+    """
+    实时热点新闻
+    """
+    msg = "特朗普大选获胜"
+    return msg
+
+
+def travel_assistant(query: str):
+    """
+    获取旅游信息
+    """
+    msg = '最近的天气特别适合去海边旅行，例如厦门，宁波，三亚这些城市，美食推荐去吃海鲜大餐，还有各种好玩的景点，例如鼓浪屿，杭州西湖，上海外滩等，祝你旅行愉快！'
+    return msg
 
 
 tools = [
     {
         "type": "function",
         "function": {
-            "name": "get_city_code",
-            "description": "根据用户的问题，获取城市名",
+            "name": "get_weather",
+            "description": "根据用户的问题，回答天气类问题。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -81,24 +113,55 @@ tools = [
                 "required": ["query"]
             }
         }
-    },
-    {
+    }, {
         "type": "function",
         "function": {
-            "name": "get_weather",
-            "description": "根据城市编码，获取实时天气情况",
+            "name": "get_stock_price",
+            "description": "根据用户的问题，回答对应公司的实时股价信息",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "acode": {
+                    "query": {
                         "type": "string",
-                        "description": "城市 acode"
+                        "description": "用户问题"
                     }
                 },
-                "required": ["acode"]
+                "required": ["query"]
             }
         }
-    },
+    }, {
+        "type": "function",
+        "function": {
+            "name": "get_news",
+            "description": "根据用户的问题，回答热点新闻信息",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "用户问题"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    }, {
+        "type": "function",
+        "function": {
+            "name": "travel_assistant",
+            "description": "根据用户的问题，回答热点旅游信息",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "用户问题"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    }
 ]
 
 
@@ -119,25 +182,36 @@ def get_completion(messages, model):
 
 def chat(prompt, model='gpt-4'):
     messages = [
-        {"role": "system", "content": "你是一个天气查询助手"},
+        {"role": "system", "content": "你是一名问答助手, 能专业，简洁的回答用户问题"},
         {"role": "user", "content": prompt}
     ]
 
     resp = get_completion(messages, model)
+    print(messages)
     messages.append(resp)
 
     while resp.tool_calls:
         for tool in resp.tool_calls:
             args = json.loads(tool.function.arguments)
-            print("参数", args)
 
-            if tool.function.name == "get_city_code":
-                result = get_city_code(**args)
-                logger.info(f"{result}")
-
-            elif tool.function.name == "get_weather":
+            if tool.function.name == "get_weather":
                 result = get_weather(**args)
                 logger.info(f"{result}")
+
+            elif tool.function.name == "get_news":
+                result = get_news(**args)
+                logger.info(f"{result}")
+
+            elif tool.function.name == "get_stock_price":
+                result = get_stock_price(**args)
+                logger.info(f"{result}")
+
+            elif tool.function.name == "travel_assistant":
+                result = travel_assistant(**args)
+                logger.info(f"{result}")
+
+            else:
+                result = "抱歉，我无法提供帮助。"
 
             messages.append(
                 {
@@ -156,7 +230,8 @@ def chat(prompt, model='gpt-4'):
 
 
 if __name__ == '__main__':
-    prompt = "苏州今天天气如何？"
+    history = []
+    prompt = "最近的热点新闻"
     chat(prompt)
     # resp = get_city_code("今天天气怎么样")
     # print(resp)
