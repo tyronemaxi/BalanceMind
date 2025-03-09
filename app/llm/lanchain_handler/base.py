@@ -48,6 +48,18 @@ class BaseThreadGenerator(object):
 
             return next(self)
 
+    def send(self, data: Any, data_type: str = "text"):
+        """
+        默认流的形式是 text, ｜ cp_id | [DONE]
+        :param data:
+        :param data_type:
+        :return:
+        """
+        # data = {"text": data, "data_type": data_type}
+        # j_data = ujson.dumps(data, ensure_ascii=False)
+        if data:
+            self.queue.put(data)
+
     def close(self):
         if not self.closed:
             self.queue.put(self.stop)
