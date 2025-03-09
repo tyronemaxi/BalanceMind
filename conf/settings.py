@@ -55,6 +55,6 @@ DATA_DIR = os.path.join(PROJECT_DIR, "data")
 ENABLE_QW_LOGIN = True if os.getenv("ENABLE_QW_LOGIN") == "True" else False
 JWT_AUTH_VERSION = os.getenv("JWT_AUTH_VERSION")
 
-# [openai]
+# [openai_llm]
 OPENAI_API_BASE = os.getenv("OPENAI_API_BASE")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

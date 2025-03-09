@@ -16,3 +16,10 @@ minio==7.1.17
 celery==5.2.3
 
 PyJWT==2.3.0
+
+openai==1.65.4
+langchain==0.3.20
+langchain-core==0.3.43
+langchain-openai==0.3.8
+langchain-text-splitters==0.3.6
+
